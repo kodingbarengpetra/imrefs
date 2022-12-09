@@ -1,7 +1,11 @@
 all: dist/imrefs
 
-dist/imrefs: main.rs
-	rustc -o dist/imrefs main.rs
+dist/imrefs: target/release/imrefs
+	mkdir -p dist
+	cp target/release/imrefs dist/imrefs
+
+target/release/imrefs: src/main.rs
+	cargo build --release
 
 clean:
-	rm -f main
+	cargo clean
