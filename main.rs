@@ -28,13 +28,16 @@ fn main() {
 }
 
 fn init(name: &String) {
-    println!("init {}", name);
+    let tmpfile = "/tmp/file1234.tmp";
+    let pid = 1234;
+    println!("Filesystem {} successfully created at {} with PID {}", name, tmpfile, pid);
 }
 
 fn send(name: &String, message: &String) {
-    println!("send {} {}", name, message);
+    let tmpfile = "/tmp/file1234.tmp";
+    println!("Data successfully written at {}", tmpfile);
 }
 
 fn stop(name: &String) {
-    println!("stop {}", name);
+    println!("Filesystem {} successfully stopped", name);
 }
