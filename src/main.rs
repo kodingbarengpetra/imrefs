@@ -1,8 +1,16 @@
 /**
  * @link https://rust-cli.github.io/book/index.html
  */
-use std::env;
+use std::{
+    env,
+    process::{exit},
+    thread::sleep,
+    time::Duration,
+};
 
+use nix::{
+    unistd::{fork, ForkResult, getpid},
+};
 fn main() {
     let command = env::args().nth(1);
     let name = env::args().nth(2);
@@ -28,7 +36,22 @@ fn main() {
 }
 
 fn init(name: &String) {
-    println!("Filesystem {} successfully initialized", name);
+    match unsafe { fork() } {
+        Ok(ForkResult::Parent { child, .. }) => {
+            println!("Filesystem {} successfully started with pid {}.", name, child);
+        }
+        Ok(ForkResult::Child) => {
+            println!("Starting filesystem {} with pid {}.", name, getpid());
+            loop {
+                sleep(Duration::from_secs(1));
+                println!("Running...");
+            }
+        }
+        Err(_) => {
+            println!("Failed to start filesystem {}", name);
+            exit(1);
+        }
+    }
 }
 
 fn send(name: &String, message: &String) {
