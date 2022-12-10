@@ -1,6 +1,5 @@
 use std::env;
-use nix::{sys::wait::waitpid,unistd::{fork, ForkResult, write}};
-
+use nix::{unistd::{fork, ForkResult}};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -30,19 +29,25 @@ fn main() {
 }
 
 fn init(name: &String) {
-
+    
     match unsafe{fork()} {
         Ok(ForkResult::Parent { child, .. }) => {
-            println!("Filesystem {} successfully created at /tmp/file1234.tmp with PID {}", name, child);
+            //
+            println!("Filesystem {} successfully with PID {}", name, child);
             //waitpid(child, None).unwrap();
         }
         Ok(ForkResult::Child) => {
+            // let mut tmpfile = NamedTempFile::new().unwrap();
+            // let tempfilename = tmpfile.path().to_str().unwrap();
+            // let text = "Brian was here. Briefly.";
+            // tmpfile.write_all(text.as_bytes());
+
             // Unsafe to use `println!` (or `unwrap`) here. See Safety.
-            write(libc::STDOUT_FILENO, "I'm a new child process\n".as_bytes()).ok();
+            println!("I'm a new child process");
+
             loop {
                 // Do nothing
             }
-            unsafe { libc::_exit(0) };
         }
         Err(_) => println!("Fork failed"),
      }    
@@ -50,9 +55,12 @@ fn init(name: &String) {
 
 fn send(name: &String, message: &String) {
     let tmpfile = "/tmp/file1234.tmp";
-    println!("Data successfully written at {}", tmpfile);
+    println!("[{}] Data successfully written at {}: {}", name, tmpfile, message);
 }
 
 fn stop(name: &String) {
     println!("Filesystem {} successfully stopped", name);
 }
+
+
+//https://www.nikbrendler.com/rust-process-communication/
