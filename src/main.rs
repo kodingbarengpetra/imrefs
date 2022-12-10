@@ -4,13 +4,15 @@
 use std::{
     env,
     process::{exit},
-    thread::sleep,
+    thread::{sleep, spawn},
     time::Duration,
 };
-
+use tempfile::NamedTempFile;
 use nix::{
     unistd::{fork, ForkResult, getpid},
 };
+use signal_hook::{iterator::Signals, consts::SIGTERM};
+
 fn main() {
     let command = env::args().nth(1);
     let name = env::args().nth(2);
@@ -42,16 +44,41 @@ fn init(name: &String) {
         }
         Ok(ForkResult::Child) => {
             println!("Starting filesystem {} with pid {}.", name, getpid());
-            loop {
-                sleep(Duration::from_secs(1));
-                println!("Running...");
-            }
+            fs_run(name);
         }
         Err(_) => {
             println!("Failed to start filesystem {}", name);
             exit(1);
         }
     }
+}
+
+fn fs_run(name: &String) {
+    let tmpfile = NamedTempFile::new().unwrap();
+    println!("Filesystem successfully created at {}", tmpfile.path().display());
+
+    fs_catch_signal(name);
+    loop {
+        sleep(Duration::from_secs(1));
+        println!("Running...");
+    }
+}
+
+fn fs_catch_signal(name: &String) {
+    let mut signals = Signals::new(&[SIGTERM]).unwrap();
+    
+    let fs_name = name.clone();
+    spawn(move || {
+        for signal in signals.forever() {
+            match signal {
+                SIGTERM => {
+                    println!("Filesystem {} successfully stopped", fs_name);
+                    exit(0);
+                }
+                _ => unreachable!(),
+            }
+        }
+    });
 }
 
 fn send(name: &String, message: &String) {

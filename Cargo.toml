@@ -6,5 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ctrlc = "3.2.3"
 nix = "0.26.1"
+signal-hook = "0.3.14"
+tempfile = "3.3.0"
+thread = "0.1.0"
 
